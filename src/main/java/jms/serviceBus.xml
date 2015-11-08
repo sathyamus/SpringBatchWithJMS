@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:amq="http://activemq.apache.org/schema/core" xmlns:jee="http://www.springframework.org/schema/jee"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-3.2.xsd
+http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd">
+
+	<!-- enable annotations -->
+	<context:annotation-config />
+
+	<context:component-scan base-package="jms" />
+
+<!-- 
+	<context:component-scan base-package="principles" />
+	<context:component-scan base-package="activemq" />
+	<context:component-scan base-package="commands" />
+	<context:component-scan base-package="events" />
+ -->
+	<!-- active mq connection factory -->
+	<bean id="amqConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory"
+		p:brokerURL="tcp://localhost:61616" p:userName="admin" p:password="admin" >
+		<amq:destinationEntry destination="testQueue"></amq:destinationEntry>
+		</bean>
+
+	<bean id="cachedConnectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory"
+		p:targetConnectionFactory-ref="amqConnectionFactory"
+		p:sessionCacheSize="10" />
+
+	<!-- queue destination -->
+<!-- 
+	<amq:queue id="principlesRequestQueue" physicalName="Principles.Request" />
+	<amq:queue id="principlesResponseQueue" physicalName="Principles.Response" />
+ -->
+ 
+	<!-- jms template instance -->
+	<bean id="producerTemplate" class="org.springframework.jms.core.JmsTemplate"
+		p:connectionFactory-ref="cachedConnectionFactory"
+		 />
+<!-- p:defaultDestination-ref="principlesRequestQueue" -->
+
+	<!-- jms queue listener, response to requests -->
+	<!-- 
+	<bean id="principlesListener" class="activemq.PrinciplesMessageConsumer" />
+ -->
+ 
+	<!-- jms listener container -->
+	<!-- 
+	<jms:listener-container container-type="default"
+		connection-factory="cachedConnectionFactory" acknowledge="auto"
+		concurrency="10-50">
+		<jms:listener destination="Principles.Request"
+			response-destination="Principles.Response" ref="principlesListener" />
+	</jms:listener-container>  -->
+</beans>
