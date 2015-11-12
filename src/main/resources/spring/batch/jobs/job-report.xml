@@ -1,23 +1,40 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:batch="http://www.springframework.org/schema/batch" 
-	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:batch="http://www.springframework.org/schema/batch" xmlns:task="http://www.springframework.org/schema/task"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/batch
 		http://www.springframework.org/schema/batch/spring-batch-2.2.xsd
 		http://www.springframework.org/schema/beans 
 		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
 
-    <bean id="report" class="com.snsystems.model.Report" scope="prototype" />
-    
+	<bean id="report" class="com.snsystems.model.Report" scope="prototype" />
+
 	<batch:job id="reportJob">
-		<batch:step id="step1">
+
+		<batch:step id="step1" next="step2">
 			<batch:tasklet>
-				<batch:chunk reader="cvsFileItemReader" writer="mysqlItemWriter"
-					commit-interval="2">
+				<batch:chunk reader="cvsFileItemReader" writer="queueItemWriter"
+					processor="queueItemProcessor" commit-interval="5" skip-limit="1000">
+					<batch:skippable-exception-classes>
+						<batch:include class="java.lang.Exception" />
+					</batch:skippable-exception-classes>
+				</batch:chunk>
+				<batch:listeners>
+					<batch:listener ref="customSkipListener" />
+					<batch:listener ref="customStepExecutionListener"></batch:listener>
+				</batch:listeners>
+			</batch:tasklet>
+		</batch:step>
+
+		<batch:step id="step2">
+			<batch:tasklet>
+				<batch:chunk reader="queueItemReader" writer="mysqlItemWriter"
+					commit-interval="5">
 				</batch:chunk>
 			</batch:tasklet>
 		</batch:step>
+
 	</batch:job>
+
 
 	<bean id="cvsFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader">
 
@@ -36,18 +53,16 @@
 				</property>
 
 				<property name="fieldSetMapper">
-				    
-				    <!-- return back to reader, rather than a mapped object. -->
-				    <!--
-				    	<bean class="org.springframework.batch.item.file.mapping.PassThroughFieldSetMapper" />
-				    -->
-				      
+
+					<!-- return back to reader, rather than a mapped object. -->
+					<!-- <bean class="org.springframework.batch.item.file.mapping.PassThroughFieldSetMapper"/> -->
+
 					<!-- map to an object -->
 					<bean
 						class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
 						<property name="prototypeBeanName" value="report" />
 					</bean>
-					
+
 				</property>
 
 			</bean>
@@ -72,4 +87,27 @@
 		</property>
 	</bean>
 
+	<!-- SET default mail properties -->
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="smtp-mail.outlook.com" />
+		<property name="port" value="587" />
+		<property name="username" value="sathyamus@hotmail.com" />
+		<property name="password" value="chinn@29" />
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.transport.protocol">smtp</prop>
+				<prop key="mail.smtp.auth">true</prop>
+				<prop key="mail.smtp.starttls.enable">true</prop>
+				<prop key="mail.debug">true</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- You can have some pre-configured messagess also which are ready to 
+		send -->
+	<bean id="preConfiguredMessage" class="org.springframework.mail.SimpleMailMessage">
+		<property name="to" value="sathyamus.sify@gmail.com"></property>
+		<property name="from" value="sathyamus@hotmail.com"></property>
+		<property name="subject" value="FATAL - Application crash. Save your job !!" />
+	</bean>
 </beans>
