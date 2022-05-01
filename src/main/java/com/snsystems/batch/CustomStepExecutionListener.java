@@ -1,6 +1,6 @@
 package com.snsystems.batch;
 
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
@@ -9,10 +9,11 @@ import org.springframework.stereotype.Component;
 
 import com.snsystems.mail.MailService;
 
+@Slf4j
 @Component("customStepExecutionListener")
 public class CustomStepExecutionListener implements StepExecutionListener {
 
-	private Logger LOG = Logger.getLogger(CustomStepExecutionListener.class);
+	// private Logger LOG = Logger.getLogger(CustomStepExecutionListener.class);
 	
 	@Autowired
 	private MailService mailService;
@@ -20,22 +21,22 @@ public class CustomStepExecutionListener implements StepExecutionListener {
 	@Override
 	public void beforeStep(StepExecution stepExecution) {
 
-		LOG.info("StartTime: " + stepExecution.getStartTime());
-		LOG.info("CommitCount: " + stepExecution.getCommitCount());
-		LOG.info("ReadCount: " + stepExecution.getReadCount());
-		LOG.info("Summary: " + stepExecution.getSummary());
-		LOG.info("ExitDescription: "
+		log.info("StartTime: " + stepExecution.getStartTime());
+		log.info("CommitCount: " + stepExecution.getCommitCount());
+		log.info("ReadCount: " + stepExecution.getReadCount());
+		log.info("Summary: " + stepExecution.getSummary());
+		log.info("ExitDescription: "
 				+ stepExecution.getExitStatus().getExitDescription());
 	}
 
 	@Override
 	public ExitStatus afterStep(StepExecution stepExecution) {
 
-		LOG.info("EndTime: " + stepExecution.getEndTime());
-		LOG.info("CommitCount: " + stepExecution.getCommitCount());
-		LOG.info("ReadCount: " + stepExecution.getReadCount());
-		LOG.info("Summary: " + stepExecution.getSummary());
-		LOG.info("ExitDescription: "
+		log.info("EndTime: " + stepExecution.getEndTime());
+		log.info("CommitCount: " + stepExecution.getCommitCount());
+		log.info("ReadCount: " + stepExecution.getReadCount());
+		log.info("Summary: " + stepExecution.getSummary());
+		log.info("ExitDescription: "
 				+ stepExecution.getExitStatus().getExitDescription());
 		
 		
